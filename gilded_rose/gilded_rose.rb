@@ -1,21 +1,49 @@
 def update_quality(items)
   items.each do |item|
-    degrade!(item)
-    if aged_brie_or_backstage_passes?(item)
-      upgrade!(item)
-      upgrade!(item) if backstage_early_bid?(item)
-      upgrade!(item) if backstage_regular_bid?(item)
-    end
-    age!(item)
-    if outdated?(item)
-      upgrade!(item) if aged_brie?(item)
-      make_worthless!(item) if backstage_passes?(item)
-      degrade!(item)
-    end
+    (ItemUpdater.new(item)).update_quality
   end
 end
 
 # ---------
+
+class Decorator
+
+  def initialize(object)
+    @object = object
+  end
+
+  def method_missing(m, *args, &block)
+    @object.send(m, *args, &block)
+  end
+
+end
+
+class MyItem < Decorator
+  # Here we add whatever we want on Item
+end
+
+class ItemUpdater
+
+  def initialize(item)
+    @item = MyItem.new(item)
+  end
+
+  def update_quality
+    degrade!(@item)
+    if aged_brie_or_backstage_passes?(@item)
+      upgrade!(@item)
+      upgrade!(@item) if backstage_early_bid?(@item)
+      upgrade!(@item) if backstage_regular_bid?(@item)
+    end
+    age!(@item)
+    if outdated?(@item)
+      upgrade!(@item) if aged_brie?(@item)
+      make_worthless!(@item) if backstage_passes?(@item)
+      degrade!(@item)
+    end
+  end
+
+end
 
 def aged_brie_or_backstage_passes?(item)
   item.name == 'Aged Brie' || item.name == 'Backstage passes to a TAFKAL80ETC concert'
